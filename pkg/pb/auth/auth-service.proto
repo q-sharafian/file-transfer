@@ -1,0 +1,51 @@
+syntax = "proto3";
+
+package auth;
+
+option go_package = "github.com/q-sharafian/file-transfer/internal/auth";
+
+// The auth service definition.
+service Auth {
+  rpc IsAllowedDownload (DownloadAccessReq) returns (AllowDownloadResult) {}
+  rpc IsAllowedUpload (UploadAccessReq) returns (AllowUploadResult) {}
+}
+
+message DownloadAccessReq {
+  string AuthToken = 1;
+  repeated string ObjectTokens = 2;
+}
+
+message UploadAccessReq {
+  string AuthToken = 1;
+  // The file types to check if could be uploaded
+  repeated string ObjectTypes = 2;
+}
+
+enum statusCode {
+  ErrInternal = 0;
+  OK = 1;
+  // There's not any matched user with this auth token
+  ErrUnauthorized = 2;
+  // User with this token exists but can't upload/download any object. 
+  // (e.g., it has not download/upload permission or it's disabled)
+  ErrForbidden = 3;
+}
+
+message AcceptableType {
+  string FileType = 1;
+  bool IsAllow = 2;
+  // Max size of the file in Kbytes
+  uint64 MaxSize = 3;
+}
+
+message AllowDownloadResult {
+  statusCode StatusCode = 1;
+  string Errmsg = 2;
+  map <string, bool> Files = 3;
+}
+
+message AllowUploadResult {
+  statusCode StatusCode = 1;
+  string Errmsg = 2;
+  repeated AcceptableType FileTypes = 3;
+}
