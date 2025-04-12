@@ -17,8 +17,8 @@ message DownloadAccessReq {
 
 message UploadAccessReq {
   string AuthToken = 1;
-  // The file types to check if could be uploaded
-  repeated string ObjectTypes = 2;
+  // The file types to check if could be uploaded and number of each file type we're going to upload
+  map <string, int64> ObjectTypes = 2;
 }
 
 enum statusCode {

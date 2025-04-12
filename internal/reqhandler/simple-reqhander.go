@@ -199,8 +199,8 @@ func (ioh *simpleReqHandler) extractDownloadInfo(ioDetails *ReqDetails) (*auth.D
 	defer ioDetails.Body.Close()
 
 	var authData struct {
-		AuthToken    token.Token   `json:"auth_token" validate:"required"`
-		ObjectTokens []token.Token `json:"object_tokens" validate:"required"`
+		AuthToken    token.Token   `json:"auth-token" validate:"required"`
+		ObjectTokens []token.Token `json:"object-tokens" validate:"required"`
 	}
 	err = json.Unmarshal(body, &authData)
 	if err != nil {
@@ -221,8 +221,8 @@ func (ioh *simpleReqHandler) extractUploadInfo(ioDetails *ReqDetails) (*auth.Upl
 	defer ioDetails.Request.Body.Close()
 
 	var authData struct {
-		AuthToken   token.Token                 `json:"auth_token" validate:"required"`
-		ObjectTypes map[file.FileExtension]uint `json:"object_types" validate:"required"`
+		AuthToken   token.Token                 `json:"auth-token" validate:"required"`
+		ObjectTypes map[file.FileExtension]uint `json:"object-types" validate:"required"`
 	}
 	err = json.Unmarshal(body, &authData)
 	if err != nil {

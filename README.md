@@ -29,11 +29,12 @@ We default download and upload links are `/download` and `/upload`.
 ```sh
 curl -X POST \
      -H "Content-Type: application/json" \
-     -d '{"auth_token": "token", "object_types":{
+     -d '{"auth-token": "token", "object-types":{
       "jpg": 10,
       "pdf": 1
-     }' \
+     } \
+    }' \
      http://API_URL/upload
 ```
 
-TODO: Add these features: Set uplaoding maximum size (of a file)- Assigning/reading labels/metadata to files
+TODO: Add these features: Set maximum upload size (of a file) - Assign/read labels/metadata to files

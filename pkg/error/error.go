@@ -16,12 +16,18 @@ func (e Error) Error() string {
 	return fmt.Sprintf(e.message)
 }
 
-func (e *Error) AppendEnd(msg string) *Error {
+func (e *Error) AppendEnd(msg string, args ...any) *Error {
+	if len(args) > 0 {
+		msg = fmt.Sprintf(msg, args...)
+	}
 	e.message = fmt.Sprintf("%s%s %s", e.message, SeparatorMsg, msg)
 	return e
 }
 
-func (e *Error) AppendBegin(msg string) *Error {
+func (e *Error) AppendBegin(msg string, args ...any) *Error {
+	if len(args) > 0 {
+		msg = fmt.Sprintf(msg, args...)
+	}
 	e.message = fmt.Sprintf("%s%s %s", msg, SeparatorMsg, e.message)
 	return e
 }

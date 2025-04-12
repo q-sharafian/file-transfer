@@ -72,9 +72,9 @@ func (s *simpleAuth) IsAllowedDownload(accessInfo DownloadAccessReq) (allowDownl
 func (s *simpleAuth) IsAllowedUpload(accessInfo UploadAccessReq) ([]allowType, *e.Error) {
 	ctx, cancel := context.WithTimeout(context.Background(), s.maxQueryTime)
 	defer cancel()
-	var fileTypes []string
-	for fileType := range accessInfo.ObjectTypes {
-		fileTypes = append(fileTypes, string(fileType))
+	fileTypes := make(map[string]int64, 0)
+	for k, v := range accessInfo.ObjectTypes {
+		fileTypes[k.String()] = int64(v)
 	}
 
 	result, err := s.authClient.IsAllowedUpload(ctx, &pbAuth.UploadAccessReq{

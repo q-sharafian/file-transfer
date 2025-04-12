@@ -131,8 +131,8 @@ func (x *DownloadAccessReq) GetObjectTokens() []string {
 type UploadAccessReq struct {
 	state     protoimpl.MessageState `protogen:"open.v1"`
 	AuthToken string                 `protobuf:"bytes,1,opt,name=AuthToken,proto3" json:"AuthToken,omitempty"`
-	// The file types to check if could be uploaded
-	ObjectTypes   []string `protobuf:"bytes,2,rep,name=ObjectTypes,proto3" json:"ObjectTypes,omitempty"`
+	// The file types to check if could be uploaded and number of each file type we're going to upload
+	ObjectTypes   map[string]int64 `protobuf:"bytes,2,rep,name=ObjectTypes,proto3" json:"ObjectTypes,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"varint,2,opt,name=value"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -174,7 +174,7 @@ func (x *UploadAccessReq) GetAuthToken() string {
 	return ""
 }
 
-func (x *UploadAccessReq) GetObjectTypes() []string {
+func (x *UploadAccessReq) GetObjectTypes() map[string]int64 {
 	if x != nil {
 		return x.ObjectTypes
 	}
@@ -369,10 +369,13 @@ const file_pkg_pb_auth_auth_service_proto_rawDesc = "" +
 	"\x1epkg/pb/auth/auth-service.proto\x12\x04auth\"U\n" +
 	"\x11DownloadAccessReq\x12\x1c\n" +
 	"\tAuthToken\x18\x01 \x01(\tR\tAuthToken\x12\"\n" +
-	"\fObjectTokens\x18\x02 \x03(\tR\fObjectTokens\"Q\n" +
+	"\fObjectTokens\x18\x02 \x03(\tR\fObjectTokens\"\xb9\x01\n" +
 	"\x0fUploadAccessReq\x12\x1c\n" +
-	"\tAuthToken\x18\x01 \x01(\tR\tAuthToken\x12 \n" +
-	"\vObjectTypes\x18\x02 \x03(\tR\vObjectTypes\"`\n" +
+	"\tAuthToken\x18\x01 \x01(\tR\tAuthToken\x12H\n" +
+	"\vObjectTypes\x18\x02 \x03(\v2&.auth.UploadAccessReq.ObjectTypesEntryR\vObjectTypes\x1a>\n" +
+	"\x10ObjectTypesEntry\x12\x10\n" +
+	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
+	"\x05value\x18\x02 \x01(\x03R\x05value:\x028\x01\"`\n" +
 	"\x0eAcceptableType\x12\x1a\n" +
 	"\bFileType\x18\x01 \x01(\tR\bFileType\x12\x18\n" +
 	"\aIsAllow\x18\x02 \x01(\bR\aIsAllow\x12\x18\n" +
@@ -416,7 +419,7 @@ func file_pkg_pb_auth_auth_service_proto_rawDescGZIP() []byte {
 }
 
 var file_pkg_pb_auth_auth_service_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
-var file_pkg_pb_auth_auth_service_proto_msgTypes = make([]protoimpl.MessageInfo, 6)
+var file_pkg_pb_auth_auth_service_proto_msgTypes = make([]protoimpl.MessageInfo, 7)
 var file_pkg_pb_auth_auth_service_proto_goTypes = []any{
 	(StatusCode)(0),             // 0: auth.statusCode
 	(*DownloadAccessReq)(nil),   // 1: auth.DownloadAccessReq
@@ -424,22 +427,24 @@ var file_pkg_pb_auth_auth_service_proto_goTypes = []any{
 	(*AcceptableType)(nil),      // 3: auth.AcceptableType
 	(*AllowDownloadResult)(nil), // 4: auth.AllowDownloadResult
 	(*AllowUploadResult)(nil),   // 5: auth.AllowUploadResult
-	nil,                         // 6: auth.AllowDownloadResult.FilesEntry
+	nil,                         // 6: auth.UploadAccessReq.ObjectTypesEntry
+	nil,                         // 7: auth.AllowDownloadResult.FilesEntry
 }
 var file_pkg_pb_auth_auth_service_proto_depIdxs = []int32{
-	0, // 0: auth.AllowDownloadResult.StatusCode:type_name -> auth.statusCode
-	6, // 1: auth.AllowDownloadResult.Files:type_name -> auth.AllowDownloadResult.FilesEntry
-	0, // 2: auth.AllowUploadResult.StatusCode:type_name -> auth.statusCode
-	3, // 3: auth.AllowUploadResult.FileTypes:type_name -> auth.AcceptableType
-	1, // 4: auth.Auth.IsAllowedDownload:input_type -> auth.DownloadAccessReq
-	2, // 5: auth.Auth.IsAllowedUpload:input_type -> auth.UploadAccessReq
-	4, // 6: auth.Auth.IsAllowedDownload:output_type -> auth.AllowDownloadResult
-	5, // 7: auth.Auth.IsAllowedUpload:output_type -> auth.AllowUploadResult
-	6, // [6:8] is the sub-list for method output_type
-	4, // [4:6] is the sub-list for method input_type
-	4, // [4:4] is the sub-list for extension type_name
-	4, // [4:4] is the sub-list for extension extendee
-	0, // [0:4] is the sub-list for field type_name
+	6, // 0: auth.UploadAccessReq.ObjectTypes:type_name -> auth.UploadAccessReq.ObjectTypesEntry
+	0, // 1: auth.AllowDownloadResult.StatusCode:type_name -> auth.statusCode
+	7, // 2: auth.AllowDownloadResult.Files:type_name -> auth.AllowDownloadResult.FilesEntry
+	0, // 3: auth.AllowUploadResult.StatusCode:type_name -> auth.statusCode
+	3, // 4: auth.AllowUploadResult.FileTypes:type_name -> auth.AcceptableType
+	1, // 5: auth.Auth.IsAllowedDownload:input_type -> auth.DownloadAccessReq
+	2, // 6: auth.Auth.IsAllowedUpload:input_type -> auth.UploadAccessReq
+	4, // 7: auth.Auth.IsAllowedDownload:output_type -> auth.AllowDownloadResult
+	5, // 8: auth.Auth.IsAllowedUpload:output_type -> auth.AllowUploadResult
+	7, // [7:9] is the sub-list for method output_type
+	5, // [5:7] is the sub-list for method input_type
+	5, // [5:5] is the sub-list for extension type_name
+	5, // [5:5] is the sub-list for extension extendee
+	0, // [0:5] is the sub-list for field type_name
 }
 
 func init() { file_pkg_pb_auth_auth_service_proto_init() }
@@ -453,7 +458,7 @@ func file_pkg_pb_auth_auth_service_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_pkg_pb_auth_auth_service_proto_rawDesc), len(file_pkg_pb_auth_auth_service_proto_rawDesc)),
 			NumEnums:      1,
-			NumMessages:   6,
+			NumMessages:   7,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
