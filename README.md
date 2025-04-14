@@ -38,3 +38,5 @@ curl -X POST \
 ```
 
 TODO: Add these features: Set maximum upload size (of a file) - Assign/read labels/metadata to files
+
+**How to run this as a container:**

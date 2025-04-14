@@ -3,6 +3,8 @@ package main
 import (
 	"fmt"
 	"os"
+	"strconv"
+	"time"
 
 	"github.com/joho/godotenv"
 	"github.com/q-sharafian/file-transfer/internal/auth"
@@ -23,12 +25,12 @@ func main() {
 		logger.ChangeLogLevel(l.Debug)
 	}
 
-	// maxQueryTime, err := strconv.Atoi(os.Getenv("AUTH_QUERY_MAX_TIME"))
-	// if err != nil {
-	// 	logger.Panicf("Failed to parse AUTH_QUERY_MAX_TIME: %s", err.Error())
-	// }
-	// authService := auth.NewSimpleAuth(os.Getenv("AUTH_SERVER_ADDR"), time.Duration(maxQueryTime)*time.Second, logger)
-	authService := auth.NewDummyAuth()
+	maxQueryTime, err := strconv.Atoi(os.Getenv("AUTH_QUERY_MAX_TIME"))
+	if err != nil {
+		logger.Panicf("Failed to parse AUTH_QUERY_MAX_TIME: %s", err.Error())
+	}
+	authService := auth.NewSimpleAuth(os.Getenv("AUTH_SERVER_ADDR"), time.Duration(maxQueryTime)*time.Second, logger)
+	// authService := auth.NewDummyAuth()
 	storageService := storage.NewS3Storage(logger)
 	server := server.NewSimpleServer(logger)
 	requestHandler := reqhandler.NewSimpleReqHandler(authService, storageService, logger)

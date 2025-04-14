@@ -26,19 +26,22 @@ type simpleReqHandler struct {
 	// Authentication service
 	auth auth.Auth
 	// Storage service
-	storage storage.Storage
+	storage  storage.Storage
+	isDevEnv bool
 }
 
 // Create a new instance of simpleReqHandler.
 func NewSimpleReqHandler(auth auth.Auth, storage storage.Storage, logger l.Logger) ReqHandler {
 	uploadExpireTime, _ := strconv.Atoi(os.Getenv("UPLOAD_EXPIRE_TIME"))
 	downloadExpireTime, _ := strconv.Atoi(os.Getenv("DOWNLOAD_EXPIRE_TIME"))
+	isDevEnv := os.Getenv("APP_MODE") == "development"
 	return &simpleReqHandler{
 		time.Duration(uploadExpireTime) * time.Second,
 		time.Duration(downloadExpireTime) * time.Second,
 		logger,
 		auth,
 		storage,
+		isDevEnv,
 	}
 }
 
@@ -46,19 +49,15 @@ func NewSimpleReqHandler(auth auth.Auth, storage storage.Storage, logger l.Logge
 func (req *simpleReqHandler) HandleRequest(ioDetails *ReqDetails) {
 	if ioDetails.Type == Upload {
 		if ioDetails.Method != http.MethodPost {
-			req.setResponse(ioDetails, downlaodResponse{
-				StatusCode: http.StatusMethodNotAllowed,
-				Message:    "Method not allowed. (To uploading a file, use POST method)",
-			}, http.StatusMethodNotAllowed)
+			msg := "HTTP method not allowed. (To uploading a file, use POST method)"
+			req.prepareErrResponse(ioDetails, http.StatusMethodNotAllowed, msg, msg)
 			return
 		}
 		req.uploadHander(ioDetails)
 	} else {
 		if ioDetails.Method != http.MethodGet {
-			req.setResponse(ioDetails, downlaodResponse{
-				StatusCode: http.StatusMethodNotAllowed,
-				Message:    "Method not allowed. (To downloading a file, use GET method)",
-			}, http.StatusMethodNotAllowed)
+			msg := "HTTP method not allowed. (To downloading a file, use GET method)"
+			req.prepareErrResponse(ioDetails, http.StatusMethodNotAllowed, msg, msg)
 			return
 		}
 		req.downloadHander(ioDetails)
@@ -68,20 +67,16 @@ func (req *simpleReqHandler) HandleRequest(ioDetails *ReqDetails) {
 func (rq *simpleReqHandler) downloadHander(req *ReqDetails) {
 	downloadReq, err := rq.extractDownloadInfo(req)
 	if err != nil {
-		rq.logger.Debugf("Extracting download info error: %s", err.Error())
-		rq.setResponse(req, downlaodResponse{
-			StatusCode: http.StatusBadRequest,
-			Message:    "Failed to extract download info",
-		}, http.StatusBadRequest)
+		msg := fmt.Sprintf("Extracting download info error: %s", err.Error())
+		rq.logger.Debugf(msg)
+		rq.prepareErrResponse(req, http.StatusBadRequest, msg, "Failed to extract download info")
 		return
 	}
 	allowInfo, err2 := rq.auth.IsAllowedDownload(*downloadReq)
 	if err2 != nil {
-		rq.logger.Debugf("Checking download permission error: %s", err2.Error())
-		rq.setResponse(req, downlaodResponse{
-			StatusCode: http.StatusInternalServerError,
-			Message:    "Failed to check download permission",
-		}, http.StatusInternalServerError)
+		msg := fmt.Sprintf("Checking download permission error: %s", err2.Error())
+		rq.logger.Debugf(msg)
+		rq.prepareErrResponse(req, http.StatusInternalServerError, msg, "Failed to check download permission")
 		return
 	}
 
@@ -99,11 +94,9 @@ func (rq *simpleReqHandler) downloadHander(req *ReqDetails) {
 		}
 		url, err := rq.storage.DownloadFile(downloadInfo, rq.downloadExpireTime)
 		if err != nil {
-			rq.logger.Debugf("Creating download link failed: %s", err.Error())
-			rq.setResponse(req, downlaodResponse{
-				StatusCode: http.StatusInternalServerError,
-				Message:    "Failed to create download link",
-			}, http.StatusInternalServerError)
+			msg := fmt.Sprintf("Creating download link failed: %s", err.Error())
+			rq.logger.Debugf(msg)
+			rq.prepareErrResponse(req, http.StatusInternalServerError, msg, "Failed to create download link")
 			return
 		}
 		res.Tokens2URLs[k.String()] = url.String()
@@ -116,20 +109,16 @@ func (rq *simpleReqHandler) downloadHander(req *ReqDetails) {
 func (rq *simpleReqHandler) uploadHander(req *ReqDetails) {
 	uploadReq, err := rq.extractUploadInfo(req)
 	if err != nil {
-		rq.logger.Debugf("Extracting upload info error: %s", err.Error())
-		rq.setResponse(req, downlaodResponse{
-			StatusCode: http.StatusBadRequest,
-			Message:    "Failed to extract upload info",
-		}, http.StatusBadRequest)
+		msg := fmt.Sprintf("Extracting upload info error: %s", err.Error())
+		rq.logger.Debugf(msg)
+		rq.prepareErrResponse(req, http.StatusBadRequest, msg, "Failed to extract upload info")
 		return
 	}
 	allowInfo, err2 := rq.auth.IsAllowedUpload(*uploadReq)
 	if err2 != nil {
-		rq.logger.Debugf("Checking upload permission error: %s", err2.Error())
-		rq.setResponse(req, downlaodResponse{
-			StatusCode: http.StatusInternalServerError,
-			Message:    "Failed to check upload permission",
-		}, http.StatusInternalServerError)
+		msg := fmt.Sprintf("Checking upload permission error: %s", err2.Error())
+		rq.logger.Debugf(msg)
+		rq.prepareErrResponse(req, http.StatusInternalServerError, msg, "Failed to check upload permission")
 		return
 	}
 
@@ -147,11 +136,9 @@ func (rq *simpleReqHandler) uploadHander(req *ReqDetails) {
 		for i := uint(0); i < uploadReq.ObjectTypes[file.FileExtension(fileType)]; i++ {
 			id, err := uuid.NewRandom()
 			if err != nil {
-				rq.logger.Debugf("Failed to create upload link: can't create uuid: %s", err.Error())
-				rq.setResponse(req, downlaodResponse{
-					StatusCode: http.StatusInternalServerError,
-					Message:    "Failed to create upload link",
-				}, http.StatusInternalServerError)
+				msg := fmt.Sprintf("Failed to create upload link: can't create uuid: %s", err.Error())
+				rq.logger.Debugf(msg)
+				rq.prepareErrResponse(req, http.StatusInternalServerError, msg, "Failed to create upload link")
 				return
 			}
 
@@ -163,11 +150,9 @@ func (rq *simpleReqHandler) uploadHander(req *ReqDetails) {
 			}
 			url, err := rq.storage.UploadFile(uploadInfo, rq.uploadExpireTime)
 			if err != nil {
-				rq.logger.Debugf("Creating upload link failed: %s", err.Error())
-				rq.setResponse(req, downlaodResponse{
-					StatusCode: http.StatusInternalServerError,
-					Message:    "Failed to create upload link",
-				}, http.StatusInternalServerError)
+				msg := fmt.Sprintf("Creating upload link failed: %s", err.Error())
+				rq.logger.Debugf(msg)
+				rq.prepareErrResponse(req, http.StatusInternalServerError, msg, "Failed to create upload link")
 				return
 			}
 			res.Tokens2URLs[fileType] = append(res.Tokens2URLs[fileType], url.String())
@@ -233,4 +218,15 @@ func (ioh *simpleReqHandler) extractUploadInfo(ioDetails *ReqDetails) (*auth.Upl
 		AuthToken:   authData.AuthToken,
 		ObjectTypes: authData.ObjectTypes,
 	}, nil
+}
+
+func (rq *simpleReqHandler) prepareErrResponse(req *ReqDetails, statusCode int, devMsg, prodMsg string) {
+	msg := prodMsg
+	if rq.isDevEnv {
+		msg = devMsg
+	}
+	rq.setResponse(req, downlaodResponse{
+		StatusCode: statusCode,
+		Message:    msg,
+	}, statusCode)
 }
