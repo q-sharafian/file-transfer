@@ -17,12 +17,25 @@ import (
 
 func main() {
 	logger := l.NewSLogger(l.Info, nil, os.Stdout)
+	switch os.Getenv("MIN_LOG_LEVEL") {
+	case "debug":
+		logger.ChangeLogLevel(l.Debug)
+	case "info":
+		logger.ChangeLogLevel(l.Info)
+	case "warn":
+		logger.ChangeLogLevel(l.Warn)
+	case "error":
+		logger.ChangeLogLevel(l.Error)
+	case "fatal":
+		logger.ChangeLogLevel(l.Fatal)
+	case "panic":
+		logger.ChangeLogLevel(l.Panic)
+	}
 	var appMode = os.Getenv("APP_MODE")
 	if appMode == "development" || appMode == "" {
 		if err := godotenv.Load(".env"); err != nil {
 			panic(fmt.Sprintf("Error loading .env file: %s", err.Error()))
 		}
-		logger.ChangeLogLevel(l.Debug)
 	}
 
 	maxQueryTime, err := strconv.Atoi(os.Getenv("AUTH_QUERY_MAX_TIME"))
