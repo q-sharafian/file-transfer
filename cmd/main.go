@@ -16,7 +16,7 @@ import (
 )
 
 func main() {
-	logger := l.NewSLogger(l.Error, nil, os.Stdout)
+	logger := l.NewSLogger(l.Info, nil, os.Stdout)
 	var appMode = os.Getenv("APP_MODE")
 	if appMode == "development" || appMode == "" {
 		if err := godotenv.Load(".env"); err != nil {

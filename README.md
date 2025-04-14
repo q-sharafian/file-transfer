@@ -39,4 +39,11 @@ curl -X POST \
 
 TODO: Add these features: Set maximum upload size (of a file) - Assign/read labels/metadata to files
 
-**How to run this as a container:**
+**How to create docker image for the app:**
+1) Create a docker image for the app:  
+```
+docker build -t file-transfer .
+```
+
+**How to run this in Kubernetes:**
+1) Follow instructions in the [README.md](https://github.com/q-sharafian/DMS/blob/master/README.md) file.
