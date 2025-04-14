@@ -11,7 +11,7 @@ COPY go.mod go.sum ./
 RUN go mod download
 
 # Copy the source files from the current directory to the working directory
-ADD ["internal/", "./internal/"] \
+ADD ["internal/", "./internal/"]
 ADD ["pkg/", "./pkg/"]
 COPY ["cmd/main.go", "./"]
 
